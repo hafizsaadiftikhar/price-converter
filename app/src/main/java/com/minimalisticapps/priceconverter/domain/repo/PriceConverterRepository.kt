@@ -13,5 +13,7 @@ interface PriceConverterRepository {
     suspend fun saveFiatCoin(fiatCoinExchange: FiatCoinExchange)
     suspend fun updateFiatCoin(fiatCoinExchange: FiatCoinExchange)
     suspend fun saveCoin(bitPayExchangeRate: BitPayExchangeRate)
+    suspend fun saveFiatCoinList(fiatCoinList: List<FiatCoinExchange>)
     suspend fun deleteFiatCoin(fiatCoinExchange: FiatCoinExchange)
+    suspend fun deleteFiatCoinList(fiatCoinList: List<FiatCoinExchange>)
 }

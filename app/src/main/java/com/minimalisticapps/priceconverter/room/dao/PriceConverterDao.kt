@@ -21,8 +21,14 @@ interface PriceConverterDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFiatCoin(coin: FiatCoinExchange)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveFiatCoinList(fiatCoinList: List<FiatCoinExchange>)
+
     @Delete
     suspend fun deleteFiatCoin(fiatCoinExchange: FiatCoinExchange)
+
+    @Delete
+    suspend fun deleteFiatCoinList(fiatCoinList: List<FiatCoinExchange>)
 
     @Update
     fun updateFiatCoin(fiatCoinExchange: FiatCoinExchange)

@@ -34,5 +34,12 @@ class PriceConverterRepositoryImpl @Inject constructor(
         priceConverterDao.insertCoin(bitPayExchangeRate)
     }
 
+    override suspend fun saveFiatCoinList(fiatCoinList: List<FiatCoinExchange>) {
+        priceConverterDao.saveFiatCoinList(fiatCoinList)
+    }
+
     override suspend fun deleteFiatCoin(fiatCoinExchange: FiatCoinExchange) = priceConverterDao.deleteFiatCoin(fiatCoinExchange)
+    override suspend fun deleteFiatCoinList(fiatCoinList: List<FiatCoinExchange>) {
+        priceConverterDao.deleteFiatCoinList(fiatCoinList)
+    }
 }

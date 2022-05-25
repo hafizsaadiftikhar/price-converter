@@ -9,4 +9,7 @@ class SaveFiatCoinUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(fiatCoinExchange: FiatCoinExchange) =
         priceConverterRepository.saveFiatCoin(fiatCoinExchange)
+
+    suspend operator fun invoke(fiatCoinList: List<FiatCoinExchange>) =
+        priceConverterRepository.saveFiatCoinList(fiatCoinList)
 }

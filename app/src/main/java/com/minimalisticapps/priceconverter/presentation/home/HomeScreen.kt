@@ -167,9 +167,12 @@ fun HomeScreen(
                         .padding(top = 25.dp)
                         .then(
                             Modifier
-                                .reorderable(state, onMove = { fromPos, toPos ->
-                                    homeViewModel.reOrderList(fromPos, toPos)
-                                }, canDragOver = { true }
+                                .reorderable(state,
+                                    onDragEnd = { fromPos, toPos ->
+                                        homeViewModel.reOrderList(fromPos, toPos)
+                                    },
+                                    canDragOver = { true },
+                                    onMove = { fromPos, toPos -> }
                                 )
                         )
                 ) {

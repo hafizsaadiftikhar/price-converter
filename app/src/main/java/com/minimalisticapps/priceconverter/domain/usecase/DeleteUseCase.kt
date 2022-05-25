@@ -8,4 +8,5 @@ class DeleteUseCase @Inject constructor(
     private val priceConverterRepository: PriceConverterRepository
 ) {
    suspend operator fun invoke(fiatCoinExchange: FiatCoinExchange) = priceConverterRepository.deleteFiatCoin(fiatCoinExchange)
+   suspend operator fun invoke(fiatCoinList: List<FiatCoinExchange>) = priceConverterRepository.deleteFiatCoinList(fiatCoinList)
 }

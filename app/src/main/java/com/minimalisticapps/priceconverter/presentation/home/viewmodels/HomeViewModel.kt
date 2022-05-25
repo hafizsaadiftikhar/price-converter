@@ -15,17 +15,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.minimalisticapps.priceconverter.common.Resource
 import com.minimalisticapps.priceconverter.common.utils.*
-import com.minimalisticapps.priceconverter.domain.usecase.DeleteUseCase
-import com.minimalisticapps.priceconverter.domain.usecase.GetCoinsUseCase
-import com.minimalisticapps.priceconverter.domain.usecase.GetFiatCoinsUseCase
-import com.minimalisticapps.priceconverter.domain.usecase.UpdateFiatCoinUseCase
+import com.minimalisticapps.priceconverter.domain.usecase.*
 import com.minimalisticapps.priceconverter.presentation.states.CoinsState
 import com.minimalisticapps.priceconverter.room.entities.BitPayCoinWithFiatCoin
 import com.minimalisticapps.priceconverter.room.entities.FiatCoinExchange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.burnoutcrew.reorderable.ItemPosition
 import java.util.*
 import javax.inject.Inject
 
@@ -35,6 +31,7 @@ class HomeViewModel @Inject constructor(
     private val getFiatCoinUseCase: GetFiatCoinsUseCase,
     private val updateFiatCoinUseCase: UpdateFiatCoinUseCase,
     private val deleteUseCase: DeleteUseCase,
+    private val saveFiatCoinUseCase: SaveFiatCoinUseCase,
     application: Application
 ) : AndroidViewModel(application) {
 
@@ -100,6 +97,7 @@ class HomeViewModel @Inject constructor(
             getCoinUseCase(isDataLoaded).collect { result ->
                 when (result) {
                     is Resource.Success -> {
+
                         PCSharedStorage.saveDataLoaded(true)
                         PCSharedStorage.saveTimesAgo(Calendar.getInstance().time.time)
                         timeAgoLong = Calendar.getInstance().time.time
@@ -171,9 +169,18 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun reOrderList(fromPos: ItemPosition, toPos: ItemPosition) {
+    fun reOrderList(fromPos: Int, toPos: Int) {
         val list = _fiatCoinsList.value.toMutableList()
-        list.move(fromPos.index, toPos.index)
+        list.move(fromPos, toPos)
+        viewModelScope.launch {
+            deleteUseCase.invoke(list.map {
+                it.fiatCoinExchange
+            })
+
+            saveFiatCoinUseCase.invoke(list.map {
+                it.fiatCoinExchange
+            })
+        }
         _fiatCoinsList.value = list
     }
 }
