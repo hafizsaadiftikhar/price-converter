@@ -1,45 +1,44 @@
 package com.minimalisticapps.priceconverter.presentation.ui.widget
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.minimalisticapps.priceconverter.R
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.Index
+import com.minimalisticapps.priceconverter.R
 import com.minimalisticapps.priceconverter.room.entities.BitPayCoinWithFiatCoin
 import com.minimalisticapps.priceconverter.room.entities.FiatCoinExchange
+import org.burnoutcrew.reorderable.ReorderableState
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.draggedItem
 
 @Composable
 fun FiatCoinItem(
+    index: Int,
+    state: ReorderableState,
     bitPayCoinWithFiatCoin: BitPayCoinWithFiatCoin,
     onValueChanged: (BitPayCoinWithFiatCoin, Double) -> Unit,
-    onLongPress: () -> Unit,
     onDeleteClick: (FiatCoinExchange) -> Unit,
 ) {
     Column(
         modifier = Modifier
+            .draggedItem(state.offsetByIndex(index))
+            .detectReorderAfterLongPress(state)
             .padding(vertical = 10.dp, horizontal = 10.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = {
-                            onLongPress()
-                        }
-                    )
-                },
+                .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(

@@ -3,7 +3,7 @@ package com.minimalisticapps.priceconverter.presentation.home
 import android.app.Activity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -37,6 +37,8 @@ import com.minimalisticapps.priceconverter.presentation.ui.widget.ShowLinearIndi
 import com.minimalisticapps.priceconverter.presentation.ui.widget.TextInputBtc
 import com.minimalisticapps.priceconverter.room.entities.BitPayCoinWithFiatCoin
 import com.minimalisticapps.priceconverter.room.entities.FiatCoinExchange
+import org.burnoutcrew.reorderable.rememberReorderState
+import org.burnoutcrew.reorderable.reorderable
 
 var coinsStateValue: CoinsState = CoinsState()
 
@@ -57,6 +59,7 @@ fun HomeScreen(
     val isErrorShown = remember { mutableStateOf(false) }
     val isShownConfirmDialog = remember { mutableStateOf(false) }
     val selectedFiatCoin = remember { mutableStateOf(FiatCoinExchange("", "", "")) }
+    val state = rememberReorderState()
 
     if (coinsState.error.isNotBlank() && !isErrorShown.value) {
         mContext.showToast(coinsState.error)
@@ -158,21 +161,25 @@ fun HomeScreen(
                 }
 
                 LazyColumn(
+                    state = state.listState,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(top = 25.dp)
+                        .then(
+                            Modifier
+                                .reorderable(state, onMove = { fromPos, toPos ->
+                                    homeViewModel.reOrderList(fromPos, toPos)
+                                }, canDragOver = { true }
+                                )
+                        )
                 ) {
-                    items(
-                        items = fiatCoinsListState,
-                        key = { pair ->
-                            pair.first
-                        }
-                    ) { pair ->
+                    itemsIndexed(
+                        items = fiatCoinsListState
+                    ) { key, bitPayCoinWithFiatCoin ->
                         FiatCoinItem(
-                            bitPayCoinWithFiatCoin = pair.second,
-                            onLongPress = {
-//                                TODO("work on orderable")
-                            },
+                            index = key,
+                            state = state,
+                            bitPayCoinWithFiatCoin = bitPayCoinWithFiatCoin,
                             onValueChanged = object : (BitPayCoinWithFiatCoin, Double) -> Unit {
                                 override fun invoke(
                                     bitPayCoinWithFiatCoin: BitPayCoinWithFiatCoin,

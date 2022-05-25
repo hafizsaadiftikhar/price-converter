@@ -14,10 +14,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.minimalisticapps.priceconverter.common.Resource
-import com.minimalisticapps.priceconverter.common.utils.PCSharedStorage
-import com.minimalisticapps.priceconverter.common.utils.formatBtc
-import com.minimalisticapps.priceconverter.common.utils.isDiffLongerThat1hours
-import com.minimalisticapps.priceconverter.common.utils.timeToTimeAgo
+import com.minimalisticapps.priceconverter.common.utils.*
 import com.minimalisticapps.priceconverter.domain.usecase.DeleteUseCase
 import com.minimalisticapps.priceconverter.domain.usecase.GetCoinsUseCase
 import com.minimalisticapps.priceconverter.domain.usecase.GetFiatCoinsUseCase
@@ -27,8 +24,8 @@ import com.minimalisticapps.priceconverter.room.entities.BitPayCoinWithFiatCoin
 import com.minimalisticapps.priceconverter.room.entities.FiatCoinExchange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ItemPosition
 import java.util.*
 import javax.inject.Inject
 
@@ -53,14 +50,14 @@ class HomeViewModel @Inject constructor(
     private val _state = mutableStateOf(CoinsState())
     private val _timeAgoState = mutableStateOf("")
     private val _isLongerThan1hour = mutableStateOf(false)
-    private val _fiatCoinsList: MutableState<List<Pair<Int,BitPayCoinWithFiatCoin>>> =
+    private val _fiatCoinsList: MutableState<List<BitPayCoinWithFiatCoin>> =
         mutableStateOf(emptyList())
     private var _textFiledValueBtc: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue())
 
 
     //    States
     val state: State<CoinsState> = _state
-    val fiatCoinsListState: State<List<Pair<Int,BitPayCoinWithFiatCoin>>> = _fiatCoinsList
+    val fiatCoinsListState: State<List<BitPayCoinWithFiatCoin>> = _fiatCoinsList
     var isRefreshing: LiveData<Boolean> = _isRefreshing
     val timeAgoState: State<String> = _timeAgoState
     val isLongerThan1hour: State<Boolean> = _isLongerThan1hour
@@ -97,14 +94,12 @@ class HomeViewModel @Inject constructor(
     }
 
     //    function for getting or inserting coins
-    @OptIn(InternalCoroutinesApi::class)
     @SuppressLint("RestrictedApi")
     fun getCoins() {
         viewModelScope.launch {
             getCoinUseCase(isDataLoaded).collect { result ->
                 when (result) {
                     is Resource.Success -> {
-
                         PCSharedStorage.saveDataLoaded(true)
                         PCSharedStorage.saveTimesAgo(Calendar.getInstance().time.time)
                         timeAgoLong = Calendar.getInstance().time.time
@@ -137,10 +132,8 @@ class HomeViewModel @Inject constructor(
     fun getFiatCoins() {
         viewModelScope.launch {
             getFiatCoinUseCase().collect {
-                var position = -1
-                _fiatCoinsList.value = it.map { bitPayCoinWithFiatCoin ->
-                    Pair(position++, bitPayCoinWithFiatCoin)
-                }
+                if (it.first)
+                    _fiatCoinsList.value = it.second
             }
 
         }
@@ -172,15 +165,15 @@ class HomeViewModel @Inject constructor(
         getCoins()
     }
 
-    fun setBtcSelection() {
-        _textFiledValueBtc.value = _textFiledValueBtc.value.copy(
-            selection = TextRange(0, _textFiledValueBtc.value.text.length)
-        )
-    }
-
-    fun updateFiatCoin(fiatCoinExchange: FiatCoinExchange){
+    fun updateFiatCoin(fiatCoinExchange: FiatCoinExchange) {
         viewModelScope.launch(Dispatchers.IO) {
             updateFiatCoinUseCase.invoke(fiatCoinExchange)
         }
+    }
+
+    fun reOrderList(fromPos: ItemPosition, toPos: ItemPosition) {
+        val list = _fiatCoinsList.value.toMutableList()
+        list.move(fromPos.index, toPos.index)
+        _fiatCoinsList.value = list
     }
 }
