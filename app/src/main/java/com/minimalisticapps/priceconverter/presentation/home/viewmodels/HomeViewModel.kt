@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +45,7 @@ class HomeViewModel @Inject constructor(
 
     //    Mutable states
     private val _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
+    private val _isStartOrdering: MutableLiveData<Boolean> = MutableLiveData(false)
     private val _state = mutableStateOf(CoinsState())
     private val _timeAgoState = mutableStateOf("")
     private val _isLongerThan1hour = mutableStateOf(false)
@@ -97,7 +99,6 @@ class HomeViewModel @Inject constructor(
             getCoinUseCase(isDataLoaded).collect { result ->
                 when (result) {
                     is Resource.Success -> {
-
                         PCSharedStorage.saveDataLoaded(true)
                         PCSharedStorage.saveTimesAgo(Calendar.getInstance().time.time)
                         timeAgoLong = Calendar.getInstance().time.time
@@ -130,8 +131,10 @@ class HomeViewModel @Inject constructor(
     fun getFiatCoins() {
         viewModelScope.launch {
             getFiatCoinUseCase().collect {
-                if (it.first)
-                    _fiatCoinsList.value = it.second
+                if (_isStartOrdering.value == false) {
+                    Log.e("getFiatCoins:", "true" )
+                    _fiatCoinsList.value = it
+                }
             }
 
         }
@@ -170,17 +173,19 @@ class HomeViewModel @Inject constructor(
     }
 
     fun reOrderList(fromPos: Int, toPos: Int) {
+        if(_isStartOrdering.value == false)
+            setStartOrdering(true)
         val list = _fiatCoinsList.value.toMutableList()
         list.move(fromPos, toPos)
         viewModelScope.launch {
-            deleteUseCase.invoke(list.map {
-                it.fiatCoinExchange
-            })
-
             saveFiatCoinUseCase.invoke(list.map {
                 it.fiatCoinExchange
             })
         }
         _fiatCoinsList.value = list
+    }
+
+    fun setStartOrdering(value: Boolean) {
+        _isStartOrdering.value = value
     }
 }

@@ -13,18 +13,11 @@ import javax.inject.Inject
 class GetFiatCoinsUseCase @Inject constructor(
     private val priceConverterRepository: PriceConverterRepository
 ) {
-    var list: List<BitPayCoinWithFiatCoin> = emptyList()
-    suspend operator fun invoke(): Flow<Pair<Boolean, List<BitPayCoinWithFiatCoin>>> {
+    suspend operator fun invoke(): Flow<List<BitPayCoinWithFiatCoin>> {
         return callbackFlow {
             priceConverterRepository.getFiatCoins().collect {
-                if (list != it) {
-                    list = it
-                    trySend(Pair(true, list))
-                } else {
-                    trySend(Pair(false, emptyList<BitPayCoinWithFiatCoin>()))
-                }
+                trySend(it)
             }
-
             awaitClose {
                 cancel()
             }

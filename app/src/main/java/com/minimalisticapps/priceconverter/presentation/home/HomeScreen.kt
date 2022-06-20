@@ -169,10 +169,12 @@ fun HomeScreen(
                             Modifier
                                 .reorderable(state,
                                     onDragEnd = { fromPos, toPos ->
-                                        homeViewModel.reOrderList(fromPos, toPos)
+                                        homeViewModel.setStartOrdering(false)
                                     },
                                     canDragOver = { true },
-                                    onMove = { fromPos, toPos -> }
+                                    onMove = { fromPos, toPos ->
+                                        homeViewModel.reOrderList(fromPos.index, toPos.index)
+                                    }
                                 )
                         )
                 ) {
